@@ -32,5 +32,5 @@ module "api" {
 
 # Вивід URL для тестування [cite: 625]
 output "api_url" {
-  value = "${module.api.api_endpoint}/rates"
+  value = "${module.api.api_endpoint}/rates/{base}"
 }

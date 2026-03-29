@@ -16,10 +16,33 @@ resource "aws_iam_role" "lambda_exec" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
 resource "aws_iam_role_policy" "dynamodb" {
   role = aws_iam_role.lambda_exec.id
   policy = jsonencode({
     Version = "2012-10-17", Statement = [{ Effect = "Allow", Action = ["dynamodb:GetItem", "dynamodb:PutItem"], Resource = var.table_arn }]
+  })
+}
+
+# TranslateFullAccess — достатньо для TranslateText; інколи помилка DownstreamDependency
+# зникає після додавання Comprehend (залежність сервісу в деяких сценаріях).
+resource "aws_iam_role_policy_attachment" "translate_full_access" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/TranslateFullAccess"
+}
+
+resource "aws_iam_role_policy" "comprehend_for_translate" {
+  role = aws_iam_role.lambda_exec.id
+  policy = jsonencode({
+    Version = "2012-10-17", Statement = [{
+      Effect   = "Allow"
+      Action   = ["comprehend:DetectDominantLanguage"]
+      Resource = "*"
+    }]
   })
 }
 
